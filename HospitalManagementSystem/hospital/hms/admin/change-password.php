@@ -1,32 +1,36 @@
 <?php
 session_start();
-error_reporting(0);
+//error_reporting(0);
 include('include/config.php');
 include('include/checklogin.php');
 check_login();
-
+date_default_timezone_set('Asia/Kolkata');// change according timezone
+$currentTime = date( 'd-m-Y h:i:s A', time () );
 if(isset($_POST['submit']))
-{	$docspecialization=$_POST['Doctorspecialization'];
-$docname=$_POST['docname'];
-$docaddress=$_POST['clinicaddress'];
-$docfees=$_POST['docfees'];
-$doccontactno=$_POST['doccontact'];
-$docemail=$_POST['docemail'];
-$password=md5($_POST['npass']);
-$sql=mysqli_query($con,"insert into doctors(specilization,doctorName,address,docFees,contactno,docEmail,password) values('$docspecialization','$docname','$docaddress','$docfees','$doccontactno','$docemail','$password')");
-if($sql)
 {
-echo "<script>alert('Doctor info added Successfully');</script>";
-echo "<script>window.location.href ='manage-doctors.php'</script>";
-
+$sql=mysqli_query($con,"SELECT password FROM  admin where password='".$_POST['cpass']."' && username='".$_SESSION['login']."'");
+$num=mysqli_fetch_array($sql);
+if($num>0)
+{
+ $con=mysqli_query($con,"update admin set password='".$_POST['npass']."', updationDate='$currentTime' where username='".$_SESSION['login']."'");
+$_SESSION['msg1']="Password Changed Successfully !!";
+}
+else
+{
+$_SESSION['msg1']="Old Password not match !!";
 }
 }
 ?>
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>Admin | Add Doctor</title>
-		
+		<title>Admin | change Password</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta content="" name="description" />
+		<meta content="" name="author" />
 		<link href="http://fonts.googleapis.com/css?family=Lato:300,400,400italic,600,700|Raleway:300,400,500,600,700|Crete+Round:400italic" rel="stylesheet" type="text/css" />
 		<link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
 		<link rel="stylesheet" href="vendor/fontawesome/css/font-awesome.min.css">
@@ -44,32 +48,34 @@ echo "<script>window.location.href ='manage-doctors.php'</script>";
 <script type="text/javascript">
 function valid()
 {
- if(document.adddoc.npass.value!= document.adddoc.cfpass.value)
+if(document.chngpwd.cpass.value=="")
+{
+alert("Current Password Filed is Empty !!");
+document.chngpwd.cpass.focus();
+return false;
+}
+else if(document.chngpwd.npass.value=="")
+{
+alert("New Password Filed is Empty !!");
+document.chngpwd.npass.focus();
+return false;
+}
+else if(document.chngpwd.cfpass.value=="")
+{
+alert("Confirm Password Filed is Empty !!");
+document.chngpwd.cfpass.focus();
+return false;
+}
+else if(document.chngpwd.npass.value!= document.chngpwd.cfpass.value)
 {
 alert("Password and Confirm Password Field do not match  !!");
-document.adddoc.cfpass.focus();
+document.chngpwd.cfpass.focus();
 return false;
 }
 return true;
 }
 </script>
 
-
-<script>
-function checkemailAvailability() {
-$("#loaderIcon").show();
-jQuery.ajax({
-url: "check_availability.php",
-data:'emailid='+$("#docemail").val(),
-type: "POST",
-success:function(data){
-$("#email-availability-status").html(data);
-$("#loaderIcon").hide();
-},
-error:function (){}
-});
-}
-</script>
 	</head>
 	<body>
 		<div id="app">		
@@ -77,7 +83,8 @@ error:function (){}
 			<div class="app-content">
 				
 						<?php include('include/header.php');?>
-						
+		
+				</header>
 				<!-- end: TOP NAVBAR -->
 				<div class="main-content" >
 					<div class="wrap-content container" id="container">
@@ -85,14 +92,14 @@ error:function (){}
 						<section id="page-title">
 							<div class="row">
 								<div class="col-sm-8">
-									<h1 class="mainTitle">Admin | Add Doctor</h1>
+									<h1 class="mainTitle">Admin | Change Password</h1>
 																	</div>
 								<ol class="breadcrumb">
 									<li>
 										<span>Admin</span>
 									</li>
 									<li class="active">
-										<span>Add Doctor</span>
+										<span>Change Password</span>
 									</li>
 								</ol>
 							</div>
@@ -107,85 +114,35 @@ error:function (){}
 										<div class="col-lg-8 col-md-12">
 											<div class="panel panel-white">
 												<div class="panel-heading">
-													<h5 class="panel-title">Add Doctor</h5>
+													<h5 class="panel-title">Change Password</h5>
 												</div>
 												<div class="panel-body">
-									
-													<form role="form" name="adddoc" method="post" onSubmit="return valid();">
+								<p style="color:red;"><?php echo htmlentities($_SESSION['msg1']);?>
+								<?php echo htmlentities($_SESSION['msg1']="");?></p>	
+													<form role="form" name="chngpwd" method="post" onSubmit="return valid();">
 														<div class="form-group">
-															<label for="DoctorSpecialization">
-																Doctor Specialization
+															<label for="exampleInputEmail1">
+																Current Password
 															</label>
-							<select name="Doctorspecialization" class="form-control" required="true">
-																<option value="">Select Specialization</option>
-<?php $ret=mysqli_query($con,"select * from doctorspecilization");
-while($row=mysqli_fetch_array($ret))
-{
-?>
-																<option value="<?php echo htmlentities($row['specilization']);?>">
-																	<?php echo htmlentities($row['specilization']);?>
-																</option>
-																<?php } ?>
-																
-															</select>
+							<input type="password" name="cpass" class="form-control"  placeholder="Enter Current Password">
 														</div>
-
-<div class="form-group">
-															<label for="doctorname">
-																 Doctor Name
-															</label>
-					<input type="text" name="docname" class="form-control"  placeholder="Enter Doctor Name" required="true">
-														</div>
-
-
-<div class="form-group">
-															<label for="address">
-																 Doctor Clinic Address
-															</label>
-					<textarea name="clinicaddress" class="form-control"  placeholder="Enter Doctor Clinic Address" required="true"></textarea>
-														</div>
-<div class="form-group">
-															<label for="fess">
-																 Doctor Consultancy Fees
-															</label>
-					<input type="text" name="docfees" class="form-control"  placeholder="Enter Doctor Consultancy Fees" required="true">
-														</div>
-	
-<div class="form-group">
-									<label for="fess">
-																 Doctor Contact no
-															</label>
-					<input type="text" name="doccontact" class="form-control"  placeholder="Enter Doctor Contact no" required="true">
-														</div>
-
-<div class="form-group">
-									<label for="fess">
-																 Doctor Email
-															</label>
-<input type="email" id="docemail" name="docemail" class="form-control"  placeholder="Enter Doctor Email id" required="true" onBlur="checkemailAvailability()">
-<span id="email-availability-status"></span>
-</div>
-
-
-
-														
 														<div class="form-group">
 															<label for="exampleInputPassword1">
-																 Password
+																New Password
 															</label>
-					<input type="password" name="npass" class="form-control"  placeholder="New Password" required="required">
+					<input type="password" name="npass" class="form-control"  placeholder="New Password">
 														</div>
 														
 <div class="form-group">
-															<label for="exampleInputPassword2">
+															<label for="exampleInputPassword1">
 																Confirm Password
 															</label>
-									<input type="password" name="cfpass" class="form-control"  placeholder="Confirm Password" required="required">
+									<input type="password" name="cfpass" class="form-control"  placeholder="Confirm Password">
 														</div>
 														
 														
 														
-														<button type="submit" name="submit" id="submit" class="btn btn-o btn-primary">
+														<button type="submit" name="submit" class="btn btn-o btn-primary">
 															Submit
 														</button>
 													</form>
@@ -223,7 +180,7 @@ while($row=mysqli_fetch_array($ret))
 		
 			<!-- start: SETTINGS -->
 	<?php include('include/setting.php');?>
-			
+			<>
 			<!-- end: SETTINGS -->
 		</div>
 		<!-- start: MAIN JAVASCRIPTS -->
