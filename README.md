@@ -14,7 +14,7 @@ Logiciels requis :
 
 
         1ere etape : 
-    Télécharger le folder Hospital Management. 
+    Télécharger le folder zip HospitalManagementSystem . 
     Une fois téléchargée, copiez (copy) le.
     
     ![image](https://user-images.githubusercontent.com/91161821/231257045-e97bd41a-dad4-48ea-82dd-c6eb20f84840.png)
